@@ -1,0 +1,96 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator erd {
+  provider = "prisma-erd-generator"
+  output   = "./erd.svg"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  firstName String
+  lastName  String
+  email     String   @unique
+  members   Member[]
+}
+
+model Member {
+  id         String @id @default(cuid())
+  userId     String
+  courseId   String
+  memberType Int
+
+  course  Course   @relation(fields: [courseId], references: [id])
+  user    User     @relation(fields: [userId], references: [id])
+  folders Folder[]
+
+  @@unique([userId, courseId])
+}
+
+model Course {
+  id              String          @id @default(cuid())
+  name            String
+  members         Member[]
+  coursesSubjects CourseSubject[]
+}
+
+model CourseSubject {
+  id        String @id @default(cuid())
+  courseId  String
+  subjectId String
+
+  course  Course  @relation(fields: [courseId], references: [id])
+  subject Subject @relation(fields: [subjectId], references: [id])
+
+  @@unique([courseId, subjectId])
+}
+
+model Subject {
+  id       String  @id @default(cuid())
+  name     String
+  imageURL String?
+
+  lessons         Lesson[]
+  folders         Folder[]
+  coursesSubjects CourseSubject[]
+}
+
+model Lesson {
+  id          String   @id @default(cuid())
+  startDate   DateTime @default(now())
+  endDate     DateTime
+  title       String
+  subtitle    String?
+  description String?
+  subjectId   String
+  priority    Int      @default(0)
+  folderId    String?
+
+  subject Subject @relation(fields: [subjectId], references: [id])
+  folder  Folder? @relation(fields: [folderId], references: [id])
+}
+
+model Folder {
+  id              String    @id @default(cuid())
+  title           String
+  parentFolderId  String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime?
+  subjectId       String
+  memberCreatedId String
+
+  parentFolder    Folder?  @relation("FolderSubfolders", fields: [parentFolderId], references: [id])
+  childrenFolders Folder[] @relation("FolderSubfolders")
+  subject         Subject  @relation(fields: [subjectId], references: [id])
+  memberCreated   Member   @relation(fields: [memberCreatedId], references: [id])
+  lessons         Lesson[]
+}
