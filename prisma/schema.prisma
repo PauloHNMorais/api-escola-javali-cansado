@@ -109,6 +109,9 @@ model Exam {
   title         String
   description   String?
   examQuestions ExamQuestion[]
+  startDate     DateTime
+  endDate       DateTime
+  points        Float
 }
 
 model ExamQuestion {
@@ -119,11 +122,22 @@ model ExamQuestion {
 
   exam    Exam     @relation(fields: [examId], references: [id])
   answers Answer[]
+  choices Choice[]
+}
+
+model Choice {
+  id             String @id @default(cuid())
+  letter         String
+  description    String
+  examQuestionId String
+
+  examQuestion ExamQuestion @relation(fields: [examQuestionId], references: [id])
 }
 
 model Answer {
   id             String @id @default(cuid())
   examQuestionId String
+  description    String
 
   examQuestion ExamQuestion @relation(fields: [examQuestionId], references: [id])
 }
