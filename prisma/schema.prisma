@@ -8,32 +8,13 @@ generator client {
 generator erd {
   provider = "prisma-erd-generator"
   output   = "./erd.svg"
+  theme    = "dark"
+  erdDebug = true
 }
 
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
-}
-
-model User {
-  id        String   @id @default(cuid())
-  firstName String
-  lastName  String
-  email     String   @unique
-  members   Member[]
-}
-
-model Member {
-  id         String @id @default(cuid())
-  userId     String
-  courseId   String
-  memberType Int
-
-  course  Course   @relation(fields: [courseId], references: [id])
-  user    User     @relation(fields: [userId], references: [id])
-  folders Folder[]
-
-  @@unique([userId, courseId])
 }
 
 model Course {
@@ -48,49 +29,101 @@ model CourseSubject {
   courseId  String
   subjectId String
 
-  course  Course  @relation(fields: [courseId], references: [id])
-  subject Subject @relation(fields: [subjectId], references: [id])
+  course       Course        @relation(fields: [courseId], references: [id])
+  subject      Subject       @relation(fields: [subjectId], references: [id])
+  subjectItems SubjectItem[]
+  messages     Message[]
 
   @@unique([courseId, subjectId])
 }
 
-model Subject {
-  id       String  @id @default(cuid())
-  name     String
-  imageURL String?
+model Member {
+  id         String @id @default(cuid())
+  userId     String
+  courseId   String
+  memberType Int
 
-  lessons         Lesson[]
-  folders         Folder[]
+  course          Course        @relation(fields: [courseId], references: [id])
+  user            User          @relation(fields: [userId], references: [id])
+  subjectItems    SubjectItem[]
+  messagesCreated Message[]
+  ownerSubjects   Subject[]
+
+  @@unique([userId, courseId])
+}
+
+model Message {
+  id              String   @id @default(cuid())
+  title           String
+  description     String
+  priority        Int      @default(0)
+  createdAt       DateTime @default(now())
+  courseSubjectId String
+  memberCreatedId String
+
+  memberCreated Member        @relation(fields: [memberCreatedId], references: [id])
+  courseSubject CourseSubject @relation(fields: [courseSubjectId], references: [id])
+}
+
+model Subject {
+  id            String  @id @default(cuid())
+  name          String
+  imageURL      String?
+  ownerMemberId String
+
+  ownerMember     Member          @relation(fields: [ownerMemberId], references: [id])
   coursesSubjects CourseSubject[]
 }
 
-model Lesson {
-  id          String   @id @default(cuid())
-  startDate   DateTime @default(now())
-  endDate     DateTime
-  title       String
-  subtitle    String?
-  description String?
-  subjectId   String
-  priority    Int      @default(0)
-  folderId    String?
+model SubjectItem {
+  id                  String    @id @default(cuid())
+  createdAt           DateTime  @default(now())
+  startDate           DateTime?
+  endDate             DateTime?
+  itemType            Int
+  title               String
+  subtitle            String?
+  description         String?
+  memberCreatedId     String
+  parentSubjectItemId String?
+  courseSubjectId     String
+  url                 String?
 
-  subject Subject @relation(fields: [subjectId], references: [id])
-  folder  Folder? @relation(fields: [folderId], references: [id])
+  courseSubject        CourseSubject @relation(fields: [courseSubjectId], references: [id])
+  memberCreated        Member        @relation(fields: [memberCreatedId], references: [id])
+  parentSubjectItem    SubjectItem?  @relation("ParentSubjectItem", fields: [parentSubjectItemId], references: [id])
+  childrenSubjectItems SubjectItem[] @relation("ParentSubjectItem")
 }
 
-model Folder {
-  id              String    @id @default(cuid())
-  title           String
-  parentFolderId  String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime?
-  subjectId       String
-  memberCreatedId String
+model User {
+  id        String   @id @default(cuid())
+  firstName String
+  lastName  String
+  email     String   @unique
+  password  String
+  members   Member[]
+}
 
-  parentFolder    Folder?  @relation("FolderSubfolders", fields: [parentFolderId], references: [id])
-  childrenFolders Folder[] @relation("FolderSubfolders")
-  subject         Subject  @relation(fields: [subjectId], references: [id])
-  memberCreated   Member   @relation(fields: [memberCreatedId], references: [id])
-  lessons         Lesson[]
+model Exam {
+  id            String         @id @default(cuid())
+  title         String
+  description   String?
+  examQuestions ExamQuestion[]
+}
+
+model ExamQuestion {
+  id             String @id @default(cuid())
+  questionNumber Int
+  description    String
+  examId         String
+
+  exam    Exam     @relation(fields: [examId], references: [id])
+  answers Answer[]
+}
+
+model Answer {
+  id             String @id @default(cuid())
+  examQuestionId String
+
+  examQuestion ExamQuestion @relation(fields: [examQuestionId], references: [id])
 }

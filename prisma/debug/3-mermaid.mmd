@@ -1,0 +1,66 @@
+erDiagram
+
+  Course {
+    String id PK 
+    String name  
+    }
+  
+
+  CourseSubject {
+    String id PK 
+    }
+  
+
+  Member {
+    String id PK 
+    Int memberType  
+    }
+  
+
+  Message {
+    String id PK 
+    String title  
+    String description  
+    Int priority  
+    DateTime createdAt  
+    }
+  
+
+  Subject {
+    String id PK 
+    String name  
+    String imageURL  "nullable"
+    }
+  
+
+  SubjectItem {
+    String id PK 
+    DateTime createdAt  
+    DateTime startDate  "nullable"
+    DateTime endDate  "nullable"
+    Int itemType  
+    String title  
+    String subtitle  "nullable"
+    String description  "nullable"
+    String url  "nullable"
+    }
+  
+
+  User {
+    String id PK 
+    String firstName  
+    String lastName  
+    String email  
+    String password  
+    }
+  
+    CourseSubject o{--|| Course : "course"
+    CourseSubject o{--|| Subject : "subject"
+    Member o{--|| Course : "course"
+    Member o{--|| User : "user"
+    Message o{--|| Member : "memberCreated"
+    Message o{--|| CourseSubject : "courseSubject"
+    Subject o{--|| Member : "ownerMember"
+    SubjectItem o{--|| CourseSubject : "courseSubject"
+    SubjectItem o{--|| Member : "memberCreated"
+    SubjectItem o|--|o SubjectItem : "parentSubjectItem"

@@ -8,7 +8,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "prisma:studio": "npx prisma studio",
+    "prisma:studio": "npx prisma studio --port 5566",
     "prisma:migrate-dev": "npx prisma migrate dev",
     "prisma:generate": "npx prisma generate",
     "prisma:seed": "npx prisma db seed"
@@ -20,6 +20,9 @@
     "@fastify/cors": "^8.2.0",
     "@fastify/jwt": "^6.3.2",
     "@prisma/client": "^4.6.1",
+    "@types/bcrypt": "^5.0.0",
+    "bcrypt": "^5.1.0",
+    "dayjs": "^1.11.6",
     "fastify": "^4.9.2",
     "short-unique-id": "^4.4.4",
     "zod": "^3.19.1"
